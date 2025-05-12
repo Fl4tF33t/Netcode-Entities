@@ -1,3 +1,4 @@
+using Unity.Collections;
 using Unity.Entities;
 using Unity.NetCode;
 using UnityEngine;
@@ -21,4 +22,13 @@ public struct GameServerData : IComponentData {
 
     [GhostField]
     public PlayerType currentPlayablePlayerType;
+    [GhostField]
+    public int playerCrossScore;
+    [GhostField]
+    public int playerCircleScore;
+}
+
+public struct GameServerDataArrays : IComponentData {
+    public NativeArray<PlayerType> playerTypesArray;
+    public NativeArray<Line> lineArray;
 }

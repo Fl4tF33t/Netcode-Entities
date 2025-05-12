@@ -1,4 +1,5 @@
 using System;
+using TMPro;
 using Unity.Entities;
 using Unity.NetCode;
 using UnityEngine;
@@ -13,12 +14,19 @@ public class PlayerUI : MonoBehaviour {
     private GameObject crossYouGameObject;
     [SerializeField]
     private GameObject circleYouGameObject;
+    [SerializeField]
+    private TextMeshProUGUI playerCrossScore;
+    [SerializeField]
+    private TextMeshProUGUI playerCircleScore;
+
 
     private void Awake() {
         crossArrowGameObject.SetActive(false);
         circleArrowGameObject.SetActive(false);
         crossYouGameObject.SetActive(false);
         circleYouGameObject.SetActive(false);
+        playerCrossScore.text = "";
+        playerCircleScore.text = "";
     }
 
     private void Start() {
@@ -42,11 +50,15 @@ public class PlayerUI : MonoBehaviour {
 
     private void Update() {
         UpdateCurrentPlayableArrow();
+        UpdateScore();
     }
 
     private void UpdateCurrentPlayableArrow() {
         EntityManager entityManager = ClientServerBootstrap.ClientWorld.EntityManager;
         EntityQuery gameServerDataEntityQuery = entityManager.CreateEntityQuery(typeof(GameServerData));
+        if (!gameServerDataEntityQuery.HasSingleton<GameServerData>()) {
+            return;
+        }
         GameServerData gameServerData = gameServerDataEntityQuery.GetSingleton<GameServerData>();
 
         if (gameServerData.currentPlayablePlayerType == PlayerType.Cross) {
@@ -56,5 +68,17 @@ public class PlayerUI : MonoBehaviour {
             crossArrowGameObject.SetActive(false);
             circleArrowGameObject.SetActive(true);
         }
+    }
+
+    private void UpdateScore() {
+        EntityManager entityManager = ClientServerBootstrap.ClientWorld.EntityManager;
+        EntityQuery gameServerDataEntityQuery = entityManager.CreateEntityQuery(typeof(GameServerData));
+        if (!gameServerDataEntityQuery.HasSingleton<GameServerData>()) {
+            return;
+        }
+        GameServerData gameServerData = gameServerDataEntityQuery.GetSingleton<GameServerData>();
+
+        playerCrossScore.text = gameServerData.playerCrossScore.ToString();
+        playerCircleScore.text = gameServerData.playerCircleScore.ToString();
     }
 }

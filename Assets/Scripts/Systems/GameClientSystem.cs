@@ -15,6 +15,7 @@ partial struct GameClientSystem : ISystem {
 
         EntityCommandBuffer ecb = SystemAPI.GetSingleton<EndSimulationEntityCommandBufferSystem.Singleton>()
             .CreateCommandBuffer(state.WorldUnmanaged);
+        EntitiesReferences entitiesReferences = SystemAPI.GetSingleton<EntitiesReferences>();
 
         // Handle the OnConnectedEvent
         foreach (
@@ -43,6 +44,70 @@ partial struct GameClientSystem : ISystem {
 
             ecb.DestroyEntity(entity);
             DOTSEventsMonobehaviour.Instance.TriggerOnGameStarted();
+        }
+
+        // Handle winning/end of Game
+        foreach ((
+            RefRO<GameWinRpc> gameWinRpc,
+            RefRO<ReceiveRpcCommandRequest> recieveRpcCommandRequest,
+            Entity entity)
+            in SystemAPI.Query<
+                RefRO<GameWinRpc>,
+                RefRO<ReceiveRpcCommandRequest>>()
+                    .WithEntityAccess()) {
+
+            DOTSEventsMonobehaviour.Instance.TriggerOnGameOver(gameWinRpc.ValueRO.winPlayerType);
+            GameClientData gameClientData = SystemAPI.GetSingleton<GameClientData>();
+
+            if (gameWinRpc.ValueRO.winPlayerType == gameClientData.localPlayerType) {
+                ecb.Instantiate(entitiesReferences.winSfxEntity);
+            } else {
+                ecb.Instantiate(entitiesReferences.loseSfxEntity);
+            }
+
+            ecb.DestroyEntity(entity);
+        }
+
+        // Handle Rematch of Game
+        foreach ((
+            RefRO<RematchRpc> rematchRpc,
+            RefRO<ReceiveRpcCommandRequest> recieveRpcCommandRequest,
+            Entity entity)
+            in SystemAPI.Query<
+                RefRO<RematchRpc>,
+                RefRO<ReceiveRpcCommandRequest>>()
+                    .WithEntityAccess()) {
+
+            DOTSEventsMonobehaviour.Instance.TriggerOnRematch();
+            ecb.DestroyEntity(entity);
+        }
+
+        // Handle draw of Game
+        foreach ((
+            RefRO<GameDrawRpc> drawRpc,
+            RefRO<ReceiveRpcCommandRequest> recieveRpcCommandRequest,
+            Entity entity)
+            in SystemAPI.Query<
+                RefRO<GameDrawRpc>,
+                RefRO<ReceiveRpcCommandRequest>>()
+                    .WithEntityAccess()) {
+
+            DOTSEventsMonobehaviour.Instance.TriggerOnGameDraw();
+            ecb.DestroyEntity(entity);
+        }
+
+        // Handle sound effects
+        foreach ((
+            RefRO<ClickedOnGridPositionRpc> clickedOnGridPositionRpc,
+            RefRO<ReceiveRpcCommandRequest> recieveRpcCommandRequest,
+            Entity entity)
+            in SystemAPI.Query<
+                RefRO<ClickedOnGridPositionRpc>,
+                RefRO<ReceiveRpcCommandRequest>>()
+                    .WithEntityAccess()) {
+
+            ecb.DestroyEntity(entity);
+            ecb.Instantiate(entitiesReferences.placeSfxEntity);
         }
     }
 

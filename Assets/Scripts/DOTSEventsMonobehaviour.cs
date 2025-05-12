@@ -7,6 +7,9 @@ public class DOTSEventsMonobehaviour : MonoBehaviour {
 
     public event Action<int> OnClientConnected;
     public event Action OnGameStarted;
+    public event Action<PlayerType> OnGameOver;
+    public event Action OnRematch;
+    public event Action OnGameDraw;
 
     private void Awake() {
         if (Instance == null) {
@@ -18,5 +21,8 @@ public class DOTSEventsMonobehaviour : MonoBehaviour {
 
     public void TriggerOnClientConnected(int connectionId) => OnClientConnected?.Invoke(connectionId);
     public void TriggerOnGameStarted() => OnGameStarted?.Invoke();
-    
+    public void TriggerOnGameOver(PlayerType winPlayerType) => OnGameOver?.Invoke(winPlayerType);
+    public void TriggerOnRematch() => OnRematch?.Invoke();
+    public void TriggerOnGameDraw() => OnGameDraw?.Invoke();
+
 }
